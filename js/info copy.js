@@ -415,87 +415,6 @@ function renderPlanDetails() {
   if (cartButton) cartButton.innerHTML = `<span>${plan.buttonText}</span>`;
 }
 
-/* ---------- Recomendaciones dinámicas: Complementa tu setup ---------- */
-
-/**
- * Devuelve hasta `limit` productos recomendados a partir del inventario y el producto actual.
- * Heurística:
- *  1) misma subcategoria (más prioridad)
- *  2) misma categoria
- *  3) proximidad de precio (precio_usd)
- *  4) fallback por precio/orden
- */
-function getRecommendedProducts(inventario, producto, limit = 3) {
-  if (!Array.isArray(inventario) || !producto) return [];
-  const pid = String(producto.id);
-  const cat = producto.categoria || '';
-  const sub = producto.subcategoria || '';
-  const price = Number(producto.precio_usd || producto.precio || 0);
-
-  const candidates = inventario.filter(p => String(p.id) !== pid);
-
-  const scored = candidates.map(p => {
-    let score = 0;
-    if (p.subcategoria && sub && String(p.subcategoria) === String(sub)) score += 100;
-    else if (p.categoria && cat && String(p.categoria) === String(cat)) score += 50;
-
-    const pPrice = Number(p.precio_usd || p.precio || 0);
-    const priceDiff = Math.abs((price || 0) - (pPrice || 0));
-    const priceBonus = price === 0 ? 0 : Math.max(0, 20 - Math.min(20, Math.round(priceDiff / Math.max(1, price || 1))));
-    score += priceBonus;
-
-    if (p.ao) score += Math.min(10, Number(p.ao) ? (Number(p.ao) % 100) / 10 : 0);
-
-    return { p, score, priceDiff };
-  });
-
-  scored.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return a.priceDiff - b.priceDiff;
-  });
-
-  const top = scored.slice(0, limit).map(s => s.p);
-  if (top.length >= limit) return top;
-
-  const used = new Set(top.map(x => String(x.id)));
-  const remaining = candidates.filter(p => !used.has(String(p.id)));
-  remaining.sort((a,b) => (Number(a.precio_usd||0) - Number(b.precio_usd||0)));
-  const fill = remaining.slice(0, limit - top.length);
-  return top.concat(fill);
-}
-
-/**
- * Renderiza los productos recomendados dentro de .related-grid
- * Reemplaza su contenido actual.
- */
-function renderRelatedProducts(recommended) {
-  const grid = document.querySelector('.related-grid');
-  if (!grid) return;
-
-  if (!recommended || recommended.length === 0) {
-    grid.innerHTML = `<div style="color:var(--text-muted); padding: 24px;">No hay recomendaciones disponibles para este producto.</div>`;
-    return;
-  }
-
-  grid.innerHTML = recommended.map(prod => {
-    const imagen = prod.imagen_principal || (Array.isArray(prod.imagenes) && prod.imagenes[0]) || 'https://placehold.co/400x400/png?text=No+Image';
-    const nombre = (prod.nombre || 'Producto').replace(/"/g, '&quot;');
-    const precio = prod.precio_usd ? `$${Number(prod.precio_usd).toFixed(2)}` : (prod.precio ? `$${prod.precio}` : '');
-    return `
-      <article class="related-card">
-        <div class="related-image"><img src="${imagen}" alt="${nombre}"></div>
-        <div class="related-content">
-          <span class="related-category">${prod.categoria || ''}</span>
-          <h3>${nombre}</h3>
-          <p class="related-price">${precio}</p>
-          <a href="info.html?id=${prod.id}" class="related-btn">Ver producto</a>
-        </div>
-      </article>
-    `;
-  }).join('');
-}
-
-
 /* ========== PRODUCT LOAD ========== */
 async function loadProduct() {
   try {
@@ -536,14 +455,6 @@ async function loadProduct() {
     updateVariantUI();
     renderVariants();
     renderPlanDetails();
-    // --- Generar y renderizar recomendaciones dinámicas ---
-try {
-  // 'inventario' es la variable local que ya cargaste arriba en loadProduct()
-  const recos = getRecommendedProducts(inventario, producto, 3); // cambias 3 por el número deseado
-  renderRelatedProducts(recos);
-} catch (e) {
-  console.warn('No fue posible generar recomendaciones dinámicas:', e);
-}
   } catch (error) {
     console.error("Error cargando producto:", error);
   }
