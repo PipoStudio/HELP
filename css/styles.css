@@ -1615,7 +1615,7 @@ button {
 
 /* Hover mantiene el mismo verde plano (sin cambios visuales extra) */
 .main-purchase-btn.adding:hover {
-  background: #10b981 !important;
+  background:  #10B981 !important;
   transform: none !important;
   box-shadow: none !important;
 }
