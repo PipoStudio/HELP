@@ -1772,3 +1772,22 @@ button {
   outline: 3px solid rgba(0,0,0,0.06);
   outline-offset: 3px;
 }
+
+
+/* Corregir la alineación del botón de productos */
+#productosBtn {
+    display: inline-flex;    /* Convierte el enlace en un contenedor Flex horizontal */
+    align-items: center;     /* Alinea verticalmente el texto y el icono al centro exacto */
+    gap: 6px;                /* Separa la palabra 'Productos' del icono para que no choquen */
+    text-decoration: none;   /* Por si acaso, quita el subrayado */
+}
+
+/* Forzar al SVG a comportarse correctamente */
+#productosBtn .icon-sm,
+#productosBtn svg {
+    display: inline-block;   /* Elimina espacios fantasmas de bloque */
+    vertical-align: middle;  /* Refuerza la alineación al centro */
+    width: 16px;             /* Ajusta el tamaño si se ve muy grande o chico */
+    height: 16px;
+    flex-shrink: 0;          /* Evita que el icono se aplaste si reduces la pantalla */
+}
