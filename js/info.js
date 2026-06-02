@@ -491,15 +491,53 @@ function setupCartButton() {
   const cartButton = document.getElementById("cartButton");
   if (!cartButton) return;
 
+  // Guardar el contenido original para restaurarlo exactamente
+  const originalHTML = cartButton.innerHTML;
+
   cartButton.addEventListener("click", () => {
     if (!productoActual) return;
+
     const itemName = varianteActual ? `${productoActual.nombre} - ${varianteActual.nombre}` : productoActual.nombre;
+
+    // Llamada correcta a addToCart (id, nombre, qty)
     if (typeof window.addToCart === "function") {
-      window.addToCart(itemName, quantity, { sku: productoActual.sku, variant: varianteActual?.id || varianteActual?.nombre || null, color: selectedColor });
+      window.addToCart(productoActual.id, itemName, quantity);
     }
+
+    // Cambiar estado visual del botón: texto y clase
+    cartButton.classList.add("adding");
+    // Cambiamos solo el texto visible (si la estructura es <span>...</span>, mantenemos el icono si existe)
+    // Intentamos sacar el span interno si existe
+    const span = cartButton.querySelector("span");
+    if (span) {
+      span.textContent = "Añadiendo...";
+    } else {
+      cartButton.textContent = "Añadiendo...";
+    }
+
+    // Restaurar cuando llegue el evento cartUpdated o tras un timeout de seguridad
+    const onUpdated = () => {
+      cartButton.classList.remove("adding");
+      cartButton.innerHTML = originalHTML;
+      window.removeEventListener("cartUpdated", onUpdated);
+      // limpiar posible timeout
+      if (cartButton._restoreTimeout) {
+        clearTimeout(cartButton._restoreTimeout);
+        delete cartButton._restoreTimeout;
+      }
+    };
+
+    // Listener único (se quita en onUpdated)
+    window.addEventListener("cartUpdated", onUpdated, { once: true });
+
+    // Fallback: si no llega cartUpdated por alguna razón, restaurar en 1400ms
+    if (cartButton._restoreTimeout) clearTimeout(cartButton._restoreTimeout);
+    cartButton._restoreTimeout = setTimeout(() => {
+      // Solo restaurar si sigue en estado adding
+      if (cartButton.classList.contains("adding")) onUpdated();
+    }, 1400);
   });
 }
-
 /* ========== INIT ========== */
 
 document.addEventListener("DOMContentLoaded", async () => {

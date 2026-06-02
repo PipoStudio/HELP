@@ -1596,73 +1596,179 @@ button {
     font-size: 0.9rem; 
     text-align: center;
 }
-#colorOptions{
-    display:flex;
-    gap:12px;
-    align-items:center;
-    flex-wrap:wrap;
+
+
+/* Estado "añadiendo" — botón plano, verde sólido, sin glow ni sombras */
+.main-purchase-btn.adding {
+  background: #10b981 !important; /* verde plano */
+  color: #fff !important;
+  transform: none !important;
+  box-shadow: none !important;
+  transition: background .12s ease, color .12s ease;
 }
 
-.color-btn{
-    width:38px;
-    height:38px;
-    padding:0;
-
-    border:none;
-    background:none;
-
-    border-radius:50%;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    cursor:pointer;
+/* Asegurar que el span interno herede el color blanco */
+.main-purchase-btn.adding span,
+.main-purchase-btn.adding i {
+  color: #fff !important;
 }
 
-.color-btn .swatch{
-    width:30px;
-    height:30px;
-    border-radius:50%;
-
-    border:2px solid rgba(255,255,255,.15);
-
-    transition:.2s ease;
+/* Hover mantiene el mismo verde plano (sin cambios visuales extra) */
+.main-purchase-btn.adding:hover {
+  background: #10b981 !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-.color-btn.active .swatch{
-    transform:scale(1.12);
+/* REMOVE: Si añadiste esta animación antes, bórrala del CSS.
+@keyframes added-pulse { ... } */
 
-    border-color:white;
 
-    box-shadow:
-        0 0 0 2px #111,
-        0 0 0 4px var(--chip-color);
+
+
+/* ===== Estilos mejorados para la zona de Colores (plano, redondeado) ===== */
+#colorOptions,
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
 }
 
-/* ocultamos el texto dentro del botón */
-
-.color-btn .color-label,
-.color-btn .meta{
-    display:none;
+/* Botón base (píldora) */
+.color-chip,
+.color-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;             /* forma redondeada */
+  background: rgba(255,255,255,0.03); /* plano, sutil */
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.88);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .12s ease, transform .08s ease, border-color .12s ease;
+  min-height: 36px;
+  box-shadow: none; /* sin resplandores */
 }
 
-
-
-/* Corregir la alineación del botón de productos */
-#productosBtn {
-    display: inline-flex;    /* Convierte el enlace en un contenedor Flex horizontal */
-    align-items: center;     /* Alinea verticalmente el texto y el icono al centro exacto */
-    gap: 6px;                /* Separa la palabra 'Productos' del icono para que no choquen */
-    text-decoration: none;   /* Por si acaso, quita el subrayado */
+/* Swatch (cuadrado con color) */
+.color-chip .swatch,
+.color-btn .swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;                 /* esquinas suaves */
+  flex-shrink: 0;
+  background: var(--chip-color, #cfcfcf);
+  border: 1px solid rgba(0,0,0,0.10);
 }
 
-/* Forzar al SVG a comportarse correctamente */
-#productosBtn .icon-sm,
-#productosBtn svg {
-    display: inline-block;   /* Elimina espacios fantasmas de bloque */
-    vertical-align: middle;  /* Refuerza la alineación al centro */
-    width: 16px;             /* Ajusta el tamaño si se ve muy grande o chico */
+/* Texto del color */
+.color-chip .color-label,
+.color-btn .color-label {
+  font-size: 0.9rem;
+  color: inherit;
+  white-space: nowrap;
+}
+
+/* meta oculta (no usada visualmente) */
+.color-chip .meta,
+.color-btn .meta {
+  display: none;
+}
+
+/* Hover: pequeño levantamiento (muy sutil) pero sin brillo */
+.color-chip:hover,
+.color-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.10);
+}
+
+/* Estado activo: fondo plano con el color (sin sombras).
+   Si el color es muy claro puede perder contraste; en la mayoría de casos queda bien.
+   Si quieres otra lógica (ej. forzar fondo blanco al activar), me lo dices. */
+.color-chip.active,
+.color-btn.active {
+  background: var(--chip-color, #ffffff);
+  color: #000; /* texto oscuro sobre fondo claro por defecto */
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Si el valor --chip-color es oscuro, forzamos texto blanco en el swatch + etiqueta.
+   Esto mejora legibilidad para colores oscuros. */
+.color-chip.active,
+.color-btn.active {
+  /* fallback: si el color activado es oscuro, el texto se verá blanco */
+  color: var(--chip-contrast, #000);
+}
+
+/* Forzar que el swatch no cambie su forma al activar */
+.color-chip.active .swatch,
+.color-btn.active .swatch {
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Focus accesible */
+.color-chip:focus,
+.color-btn:focus {
+  outline: 2px solid rgba(255,255,255,0.10);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+}
+
+/* Pequeño ajuste en mobile para que no queden demasiado apretados */
+@media (max-width: 768px) {
+  .color-chip,
+  .color-btn {
+    padding: 0.36rem 0.56rem;
+    min-height: 34px;
+    font-size: 0.88rem;
+  }
+  .color-chip .swatch,
+  .color-btn .swatch {
+    width: 16px;
     height: 16px;
-    flex-shrink: 0;          /* Evita que el icono se aplaste si reduces la pantalla */
+    border-radius: 5px;
+  }
+}
+
+/* Estado activo: fondo claro y borde con el color seleccionado para mantener contraste */
+.color-chip.active,
+.color-btn.active {
+  background: #fff;                     /* fondo blanco plano */
+  color: #000;                          /* texto oscuro y legible */
+  border: 1px solid var(--chip-color, rgba(0,0,0,0.08)); /* borde con el color seleccionado */
+  box-shadow: none;
+}
+
+/* Asegurar que el swatch muestre el color (con borde para colores muy claros) */
+.color-chip.active .swatch,
+.color-btn.active .swatch {
+  background: var(--chip-color, #cfcfcf);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Hover del active: mantener contraste (ligero oscurecimiento del borde, sin cambiar background) */
+.color-chip.active:hover,
+.color-btn.active:hover {
+  background: #fff;
+  border-color: color-mix(in srgb, var(--chip-color, #000) 75%, black 25%); /* sutil cambio de borde si el navegador soporta color-mix */
+  transform: translateY(-2px);
+}
+
+/* Si el navegador no soporta color-mix, la línea anterior no rompe nada; opcional: fallback más simple */
+.color-chip.active:hover,
+.color-btn.active:hover {
+  border-color: rgba(0,0,0,0.12);
+}
+
+/* Mantener focus accesible */
+.color-chip:focus,
+.color-btn:focus {
+  outline: 3px solid rgba(0,0,0,0.06);
+  outline-offset: 3px;
 }
